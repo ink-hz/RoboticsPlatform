@@ -306,7 +306,7 @@ curl http://127.0.0.1:8000/api/v1/dashboard/stats
 
 **🎯 构建下一代机器人云平台**
 
-Made with ❤️ by Robot Cloud Platform Team
+Made with ❤️ by Ink
 
 [⭐ Star](../../stargazers) | [🐛 Report Bug](../../issues) | [💡 Request Feature](../../issues)
 

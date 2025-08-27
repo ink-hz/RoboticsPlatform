@@ -1,0 +1,7 @@
+rclpy>=3.3.7
+requests>=2.28.0
+sensor-msgs
+nav-msgs  
+geometry-msgs
+std-msgs
+diagnostic-msgs

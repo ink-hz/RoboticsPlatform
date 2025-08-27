@@ -1,0 +1,149 @@
+services:
+  # PostgreSQL - 主数据库
+  postgres:
+    image: postgres:15-alpine
+    container_name: rcp-postgres
+    environment:
+      POSTGRES_DB: robotics
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: changeme
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - rcp-network
+
+  # TimescaleDB - 时序数据库 (传感器数据)
+  timescaledb:
+    image: timescale/timescaledb:latest-pg15
+    container_name: rcp-timescale
+    environment:
+      POSTGRES_DB: telemetry
+      POSTGRES_USER: tsdb
+      POSTGRES_PASSWORD: changeme
+    ports:
+      - "5433:5432"
+    volumes:
+      - timescale-data:/var/lib/postgresql/data
+    networks:
+      - rcp-network
+
+  # Redis - 缓存和消息队列
+  redis:
+    image: redis:7-alpine
+    container_name: rcp-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - rcp-network
+
+  # MinIO - 对象存储 (模型、数据湖)
+  minio:
+    image: minio/minio:latest
+    container_name: rcp-minio
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio-data:/data
+    networks:
+      - rcp-network
+
+  # Kafka - 消息流处理
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: rcp-zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    networks:
+      - rcp-network
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: rcp-kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    networks:
+      - rcp-network
+
+  # Prometheus - 监控
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: rcp-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./infrastructure/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    networks:
+      - rcp-network
+
+  # Grafana - 可视化
+  grafana:
+    image: grafana/grafana:latest
+    container_name: rcp-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_INSTALL_PLUGINS: redis-datasource
+    volumes:
+      - grafana-data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    networks:
+      - rcp-network
+
+  # Loki - 日志聚合
+  loki:
+    image: grafana/loki:latest
+    container_name: rcp-loki
+    ports:
+      - "3100:3100"
+    volumes:
+      - loki-data:/loki
+    command: -config.file=/etc/loki/local-config.yaml
+    networks:
+      - rcp-network
+
+  # NATS - 轻量级消息系统 (机器人通信)
+  nats:
+    image: nats:latest
+    container_name: rcp-nats
+    ports:
+      - "4222:4222"
+      - "8222:8222"
+    command: "-js -m 8222"
+    networks:
+      - rcp-network
+
+volumes:
+  postgres-data:
+  timescale-data:
+  redis-data:
+  minio-data:
+  prometheus-data:
+  grafana-data:
+  loki-data:
+
+networks:
+  rcp-network:
+    driver: bridge

@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Architecture Diagram Styling Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f0f0f0; }
+        
+        .comparison { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px; }
+        .panel { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        
+        /* Old styles (problematic) */
+        .old-architecture-diagram {
+            background: white; 
+            border: 2px solid #ddd; 
+            border-radius: 10px; 
+            padding: 20px; 
+            margin: 20px 0; 
+        }
+        .old-layer { 
+            display: flex; 
+            justify-content: space-around; 
+            margin: 15px 0; 
+            padding: 10px; 
+            border-radius: 8px; 
+            min-height: 60px;
+            align-items: center;
+        }
+        .old-layer.presentation { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        .old-component {
+            background: rgba(255,255,255,0.2);
+            padding: 8px 12px;
+            border-radius: 5px;
+            margin: 2px;
+            border: 1px solid rgba(255,255,255,0.3);
+            font-size: 0.9em;
+            cursor: pointer;
+        }
+        
+        /* New styles (improved) */
+        .new-architecture-diagram {
+            background: #f8f9fa; 
+            border: 1px solid #e9ecef; 
+            border-radius: 8px; 
+            padding: 25px; 
+            margin: 20px 0; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .new-layer { 
+            display: flex; 
+            justify-content: space-around; 
+            margin: 15px 0; 
+            padding: 10px; 
+            border-radius: 8px; 
+            min-height: 60px;
+            align-items: center;
+        }
+        .new-layer.presentation { background: #5a67d8; color: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .new-component {
+            background: rgba(255,255,255,0.9);
+            color: #333;
+            padding: 8px 12px;
+            border-radius: 6px;
+            margin: 3px;
+            border: 1px solid rgba(0,0,0,0.1);
+            font-size: 0.85em;
+            font-weight: 500;
+            text-shadow: none;
+            cursor: pointer;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .new-component.healthy { border-left: 4px solid #4CAF50; }
+        
+        .layer-title { 
+            font-weight: bold; 
+            font-size: 1.1em; 
+            margin-bottom: 10px;
+            text-align: center;
+            width: 100%;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+            letter-spacing: 0.5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎨 Architecture Diagram Styling Comparison</h1>
+    
+    <div class="comparison">
+        <div class="panel">
+            <h2>❌ Before (反光严重，字体不清)</h2>
+            <div class="old-architecture-diagram">
+                <div class="old-layer presentation">
+                    <div class="layer-title">Presentation Layer</div>
+                    <div class="old-component">📊 Web Dashboard</div>
+                    <div class="old-component">📋 API Documentation</div>
+                    <div class="old-component">📈 Real-time Monitoring</div>
+                </div>
+            </div>
+            <p><strong>问题:</strong></p>
+            <ul>
+                <li>透明组件看不清文字</li>
+                <li>渐变背景反光严重</li>
+                <li>对比度不足</li>
+                <li>边框太粗糙</li>
+            </ul>
+        </div>
+        
+        <div class="panel">
+            <h2>✅ After (清晰易读)</h2>
+            <div class="new-architecture-diagram">
+                <div class="new-layer presentation">
+                    <div class="layer-title">Presentation Layer</div>
+                    <div class="new-component healthy">📊 Web Dashboard</div>
+                    <div class="new-component healthy">📋 API Documentation</div>
+                    <div class="new-component healthy">📈 Real-time Monitoring</div>
+                </div>
+            </div>
+            <p><strong>改进:</strong></p>
+            <ul>
+                <li>高对比度白色背景</li>
+                <li>纯色背景无反光</li>
+                <li>清晰的文字显示</li>
+                <li>优雅的阴影效果</li>
+                <li>健康状态彩色边框</li>
+            </ul>
+        </div>
+    </div>
+    
+    <div style="background: #e8f5e8; padding: 15px; border-radius: 5px; margin-top: 20px;">
+        <h3>✅ 样式改进总结</h3>
+        <ul>
+            <li><strong>组件背景:</strong> 从透明度0.2改为0.9，大幅提升可读性</li>
+            <li><strong>字体颜色:</strong> 从白色改为深色#333，在白背景上更清晰</li>
+            <li><strong>层背景:</strong> 从渐变改为纯色，消除反光问题</li>
+            <li><strong>边框样式:</strong> 优化边框和阴影，更现代化</li>
+            <li><strong>间距调整:</strong> 增加组件间距，提升视觉层次</li>
+        </ul>
+        <p><strong>现在访问 <a href="http://localhost:8080/">http://localhost:8080/</a> 查看改进后的动态架构图！</strong></p>
+    </div>
+</body>
+</html>

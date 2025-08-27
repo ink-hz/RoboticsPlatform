@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>机器人云平台 - 控制台</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <style>
+        .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .card-hover:hover { transform: translateY(-2px); transition: all 0.3s ease; }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div id="app">
+        <!-- 顶部导航 -->
+        <nav class="gradient-bg text-white p-4 shadow-lg">
+            <div class="container mx-auto flex justify-between items-center">
+                <div class="flex items-center space-x-4">
+                    <h1 class="text-2xl font-bold">🤖 机器人云平台</h1>
+                    <span class="bg-green-500 px-2 py-1 rounded-full text-xs">[[ platformStatus ]]</span>
+                </div>
+                <div class="flex space-x-4">
+                    <button @click="activeTab = 'dashboard'" 
+                            :class="activeTab === 'dashboard' ? 'bg-white bg-opacity-20' : ''"
+                            class="px-4 py-2 rounded-lg hover:bg-white hover:bg-opacity-10">
+                        仪表板
+                    </button>
+                    <button @click="activeTab = 'robots'" 
+                            :class="activeTab === 'robots' ? 'bg-white bg-opacity-20' : ''"
+                            class="px-4 py-2 rounded-lg hover:bg-white hover:bg-opacity-10">
+                        机器人
+                    </button>
+                    <button @click="activeTab = 'telemetry'" 
+                            :class="activeTab === 'telemetry' ? 'bg-white bg-opacity-20' : ''"
+                            class="px-4 py-2 rounded-lg hover:bg-white hover:bg-opacity-10">
+                        遥测数据
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <!-- 主内容区 -->
+        <div class="container mx-auto p-6">
+            <!-- 仪表板 -->
+            <div v-if="activeTab === 'dashboard'" class="space-y-6">
+                <!-- 统计卡片 -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <div class="bg-white p-6 rounded-lg shadow card-hover">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-600 text-sm">在线机器人</p>
+                                <p class="text-3xl font-bold text-green-600">[[ stats.onlineRobots ]]</p>
+                            </div>
+                            <div class="text-4xl">🟢</div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white p-6 rounded-lg shadow card-hover">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-600 text-sm">离线机器人</p>
+                                <p class="text-3xl font-bold text-red-600">[[ stats.offlineRobots ]]</p>
+                            </div>
+                            <div class="text-4xl">🔴</div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white p-6 rounded-lg shadow card-hover">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-600 text-sm">今日消息</p>
+                                <p class="text-3xl font-bold text-blue-600">[[ stats.todayMessages ]]</p>
+                            </div>
+                            <div class="text-4xl">📊</div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white p-6 rounded-lg shadow card-hover">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-600 text-sm">系统健康</p>
+                                <p class="text-3xl font-bold text-green-600">[[ systemHealth ]]%</p>
+                            </div>
+                            <div class="text-4xl">❤️</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 实时图表 -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-white p-6 rounded-lg shadow">
+                        <h3 class="text-lg font-semibold mb-4">系统负载</h3>
+                        <div id="systemLoad" style="height: 300px;"></div>
+                    </div>
+                    
+                    <div class="bg-white p-6 rounded-lg shadow">
+                        <h3 class="text-lg font-semibold mb-4">消息处理量</h3>
+                        <div id="messageChart" style="height: 300px;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 机器人列表 -->
+            <div v-if="activeTab === 'robots'" class="bg-white rounded-lg shadow overflow-hidden">
+                <div class="p-6 border-b">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-lg font-semibold">机器人列表</h3>
+                        <button @click="addRobot" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+                            添加机器人
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">机器人ID</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">状态</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">电池</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">位置</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">最后连接</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200">
+                            <tr v-for="robot in robots" :key="robot.id">
+                                <td class="px-6 py-4 whitespace-nowrap font-medium">[[ robot.id ]]</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span :class="robot.status === 'online' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
+                                          class="px-2 py-1 rounded-full text-xs font-medium">
+                                        [[ robot.status ]]
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <div class="w-16 bg-gray-200 rounded-full h-2 mr-2">
+                                            <div :style="`width: ${robot.battery}%`" 
+                                                 :class="robot.battery > 20 ? 'bg-green-600' : 'bg-red-600'"
+                                                 class="h-2 rounded-full"></div>
+                                        </div>
+                                        <span class="text-sm">[[ robot.battery ]]%</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm">[[ robot.location ]]</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm">[[ robot.lastSeen ]]</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <button @click="viewRobot(robot.id)" 
+                                            class="text-blue-600 hover:text-blue-900 mr-3">查看</button>
+                                    <button @click="controlRobot(robot.id)" 
+                                            class="text-green-600 hover:text-green-900">控制</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 遥测数据 -->
+            <div v-if="activeTab === 'telemetry'" class="space-y-6">
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <h3 class="text-lg font-semibold mb-4">实时遥测数据</h3>
+                    
+                    <!-- 加载状态 -->
+                    <div v-if="loading" class="text-center py-8">
+                        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+                        <p class="text-gray-500 mt-2">正在加载数据...</p>
+                    </div>
+                    
+                    <!-- 无数据状态 -->
+                    <div v-else-if="telemetryData.length === 0" class="text-center py-8 text-gray-500">
+                        <div class="text-4xl mb-2">📡</div>
+                        <p>暂无遥测数据</p>
+                        <p class="text-sm mt-1">请确保机器人已连接并发送数据</p>
+                    </div>
+                    
+                    <!-- 数据列表 -->
+                    <div v-else class="space-y-4">
+                        <div v-for="data in telemetryData" :key="data.timestamp" 
+                             class="border-l-4 border-blue-500 pl-4 py-2">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <p class="font-medium">[[ data.robotId ]]</p>
+                                    <p class="text-sm text-gray-600">[[ data.type ]]</p>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-sm text-gray-500">[[ data.timestamp ]]</p>
+                                    <p class="text-sm font-medium">
+                                        <span v-if="typeof data.data === 'object'">
+                                            [[ Object.keys(data.data).map(key => `${key}: ${data.data[key]}`).join(', ') ]]
+                                        </span>
+                                        <span v-else>[[ data.data ]]</span>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { createApp } = Vue;
+        
+        createApp({
+            delimiters: ['[[', ']]'],
+            data() {
+                return {
+                    activeTab: 'dashboard',
+                    platformStatus: '连接中',
+                    stats: {
+                        onlineRobots: 0,
+                        offlineRobots: 0,
+                        todayMessages: 0,
+                        systemHealth: 0
+                    },
+                    robots: [],
+                    telemetryData: [],
+                    loading: true,
+                    error: null
+                }
+            },
+            mounted() {
+                this.initCharts();
+                this.loadInitialData();
+                this.startRealTimeUpdates();
+            },
+            methods: {
+                initCharts() {
+                    // 系统负载图表
+                    const systemChart = echarts.init(document.getElementById('systemLoad'));
+                    systemChart.setOption({
+                        title: { show: false },
+                        tooltip: { trigger: 'axis' },
+                        xAxis: { type: 'category', data: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00'] },
+                        yAxis: { type: 'value', max: 100 },
+                        series: [{
+                            data: [20, 35, 60, 45, 80, 65],
+                            type: 'line',
+                            smooth: true,
+                            areaStyle: { color: 'rgba(54, 162, 235, 0.2)' },
+                            lineStyle: { color: '#36A2EB' }
+                        }]
+                    });
+
+                    // 消息处理量图表
+                    const messageChart = echarts.init(document.getElementById('messageChart'));
+                    messageChart.setOption({
+                        title: { show: false },
+                        tooltip: { trigger: 'axis' },
+                        xAxis: { type: 'category', data: ['周一', '周二', '周三', '周四', '周五', '周六', '周日'] },
+                        yAxis: { type: 'value' },
+                        series: [{
+                            data: [1200, 1900, 3000, 5000, 7000, 3300, 2200],
+                            type: 'bar',
+                            itemStyle: { color: '#FF6384' }
+                        }]
+                    });
+                },
+                async loadInitialData() {
+                    try {
+                        await Promise.all([
+                            this.fetchDashboardStats(),
+                            this.fetchRobots(),
+                            this.fetchTelemetry()
+                        ]);
+                        this.platformStatus = '运行中';
+                        this.loading = false;
+                    } catch (error) {
+                        this.error = '数据加载失败';
+                        this.platformStatus = '连接异常';
+                        this.loading = false;
+                        console.error('加载数据失败:', error);
+                    }
+                },
+                
+                async fetchDashboardStats() {
+                    const response = await fetch('/api/v1/dashboard/stats');
+                    const data = await response.json();
+                    this.stats = data;
+                },
+                
+                async fetchRobots() {
+                    const response = await fetch('/api/v1/robots');
+                    const data = await response.json();
+                    this.robots = data.robots || [];
+                },
+                
+                async fetchTelemetry() {
+                    const response = await fetch('/api/v1/telemetry/latest');
+                    const data = await response.json();
+                    this.telemetryData = data.telemetry || [];
+                },
+                
+                startRealTimeUpdates() {
+                    setInterval(async () => {
+                        try {
+                            await this.fetchDashboardStats();
+                            await this.fetchRobots();
+                            await this.fetchTelemetry();
+                        } catch (error) {
+                            console.error('实时更新失败:', error);
+                        }
+                    }, 5000);
+                },
+                addRobot() {
+                    alert('添加机器人功能开发中...');
+                },
+                viewRobot(id) {
+                    alert(`查看机器人 ${id} 详情...`);
+                },
+                controlRobot(id) {
+                    alert(`控制机器人 ${id}...`);
+                }
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>

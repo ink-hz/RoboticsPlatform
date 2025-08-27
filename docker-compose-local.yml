@@ -1,0 +1,62 @@
+# 简化版本 - 用于网络不稳定时的本地开发
+services:
+  # PostgreSQL - 主数据库
+  postgres:
+    image: postgres:15-alpine
+    container_name: rcp-postgres
+    environment:
+      POSTGRES_DB: robotics
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: changeme
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - rcp-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis - 缓存
+  redis:
+    image: redis:7-alpine
+    container_name: rcp-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - rcp-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # API Gateway
+  api-gateway:
+    build: ./services/api-gateway
+    container_name: rcp-api-gateway
+    ports:
+      - "8000:8000"
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - rcp-network
+    volumes:
+      - ./services/api-gateway:/app
+
+volumes:
+  postgres-data:
+  redis-data:
+
+networks:
+  rcp-network:
+    driver: bridge

@@ -1,0 +1,16 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: robotics-platform
+
+resources:
+  - namespace.yaml
+  - api-gateway-deployment.yaml
+
+commonLabels:
+  project: robotics-cloud-platform
+  managed-by: kustomize
+
+images:
+  - name: rcp/api-gateway
+    newTag: latest

@@ -1,0 +1,23 @@
+# ROS2 Integration Dependencies
+# These should be installed in addition to main requirements.txt
+
+# ROS2 Python client library
+rclpy>=3.3.7
+
+# ROS2 message types (install via apt if possible)
+# sensor-msgs
+# nav-msgs  
+# geometry-msgs
+# std-msgs
+# diagnostic-msgs
+
+# Additional ROS utilities
+rosbag2-py
+tf2-ros-py
+cv-bridge
+
+# For ROS2 development
+colcon-common-extensions
+
+# Note: It's recommended to install ROS2 messages via apt:
+# sudo apt install ros-jazzy-sensor-msgs ros-jazzy-nav-msgs ros-jazzy-geometry-msgs

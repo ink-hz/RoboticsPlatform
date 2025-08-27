@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: robotics-platform
+  labels:
+    name: robotics-platform
+    environment: development
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: robotics-edge
+  labels:
+    name: robotics-edge
+    environment: development
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: robotics-ml
+  labels:
+    name: robotics-ml
+    environment: development

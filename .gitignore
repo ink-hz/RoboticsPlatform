@@ -38,6 +38,9 @@ ENV/
 *.out
 vendor/
 go.sum
+# Go binaries
+robot-cloud-go
+services/go-api-gateway/robot-cloud-go
 
 # Docker
 .dockerignore
